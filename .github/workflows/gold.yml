@@ -2,25 +2,18 @@ name: Gold Price Monitor
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
-  workflow_dispatch:
+    - cron: "*/5 * * * *"   # 每 5 分钟执行一次
+  workflow_dispatch:         # 支持手动触发
 
 jobs:
   run:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout code (full repo)
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # ?保证拉取完整 commit 历史，不用只拉取触发 commit
-
-      - name: Print files for debugging
-        run: |
-          echo "[DEBUG] 当前文件列表:"
-          ls -l
-          echo "[DEBUG] gold_notice.py 内容:"
-          cat gold_notice.py
+          fetch-depth: 0  # 拉取完整历史，确保获取最新文件
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,7 +23,17 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Debug: list files
+        run: |
+          echo "[DEBUG] 当前工作目录: $(pwd)"
+          echo "[DEBUG] 文件列表:"
+          ls -l
+          echo "[DEBUG] gold.py 内容预览:"
+          head -n 20 gold.py
+          echo "[DEBUG] gold_notice.py 内容预览:"
+          head -n 20 gold_notice.py
 
       - name: Run gold monitor
         env:
@@ -42,4 +45,5 @@ jobs:
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
         run: |
+          echo "[INFO] 启动黄金价格监控程序"
           python gold.py
