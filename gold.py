@@ -1,5 +1,11 @@
 ﻿# -*- coding: utf-8 -*-
 import sys
+import os
+
+# 把项目根目录加入 Python 模块搜索路径
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE_DIR)
+
 sys.stdout.reconfigure(encoding='utf-8')
 
 import os
