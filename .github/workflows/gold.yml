@@ -12,6 +12,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # ?保证拉取完整 commit 历史，不用只拉取触发 commit
+
+      - name: Print files for debugging
+        run: |
+          echo "[DEBUG] 当前文件列表:"
+          ls -l
+          echo "[DEBUG] gold_notice.py 内容:"
+          cat gold_notice.py
 
       - name: Set up Python
         uses: actions/setup-python@v5
