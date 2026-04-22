@@ -2,8 +2,11 @@ name: Gold Price Monitor
 
 on:
   schedule:
-    - cron: "0 * * * *"   # 每5分钟执行一次
+    - cron: "*/5 * * * *"
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   run:
