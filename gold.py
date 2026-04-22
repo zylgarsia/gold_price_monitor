@@ -56,12 +56,6 @@ def save_price(price):
 # ======================
 def main():
     print("[INFO] 启动黄金价格监控程序")
-# test
-    try:
-        send_email(...)
-        print("[SUCCESS] 邮件发送成功")
-    except Exception as e:
-        print(f"[ERROR] 邮件发送失败: {e}")
         
     try:
         current_price = get_gold_price()
