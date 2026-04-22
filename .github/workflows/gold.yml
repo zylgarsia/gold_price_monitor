@@ -2,48 +2,70 @@ name: Gold Price Monitor
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # 每 5 分钟执行一次
-  workflow_dispatch:         # 支持手动触发
+    - cron: "*/5 * * * *"   # 每5分钟执行一次
+  workflow_dispatch:
 
 jobs:
   run:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code (full repo)
+      # 1. 拉代码
+      - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # 拉取完整历史，确保获取最新文件
 
-      - name: Set up Python
+      # 2. 设置 Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
+      # 3. 安装依赖
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
 
-      - name: Debug: list files
+      # 4. 恢复上一次价格文件（关键）
+      - name: Restore last price
+        uses: actions/cache@v4
+        with:
+          path: last_price.txt
+          key: gold-price-cache
+
+      # 5. 调试信息
+      - name: Debug info
         run: |
-          echo "[DEBUG] 当前工作目录: $(pwd)"
+          echo "[DEBUG] 当前目录:"
+          pwd
           echo "[DEBUG] 文件列表:"
           ls -l
-          echo "[DEBUG] gold.py 内容预览:"
-          head -n 20 gold.py
-          echo "[DEBUG] gold_notice.py 内容预览:"
-          head -n 20 gold_notice.py
+          echo "[DEBUG] Python版本:"
+          python --version
 
+      # 6. 运行程序
       - name: Run gold monitor
         env:
-          PRICE_UP_THRESHOLD: "0"
-          PRICE_DOWN_THRESHOLD: "0"
+          PRICE_UP_THRESHOLD: "1"
+          PRICE_DOWN_THRESHOLD: "1"
+
           SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
+
         run: |
-          echo "[INFO] 启动黄金价格监控程序"
+          set -e
+          echo "[INFO] 开始执行监控"
           python gold.py
+          echo "[INFO] 执行完成"
+
+      # 7. 保存价格文件（关键）
+      - name: Save last price
+        uses: actions/cache@v4
+        with:
+          path: last_price.txt
+          key: gold-price-cache
